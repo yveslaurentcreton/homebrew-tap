@@ -25,8 +25,12 @@ base = f"{REPOSITORY}/releases/download/{tag}"
 checksums = dict(line.split()[::-1] for line in download(f"{base}/SHA256SUMS").decode().splitlines())
 with zipfile.ZipFile(io.BytesIO(download(f"{base}/cretspec-{version}-packages.zip"))) as archive:
     formula = archive.read("homebrew/Formula/cretspec.rb").decode("utf-8")
-if f'  version "{version}"' not in formula:
-    raise ValueError("Formula version does not match the release")
+# Normalize the initial release's metadata to Homebrew's strict style. Published
+# assets stay immutable; subsequent releases already emit the corrected layout.
+if version == "0.4.0":
+    formula = formula.replace('  version "0.4.0"\n', '')
+    formula = formula.replace('  depends_on :macos\n  depends_on "git"\n\n', '')
+    formula = formula.replace('  on_macos do', '  depends_on "git"\n  depends_on :macos\n\n  on_macos do')
 for architecture in ("aarch64", "x86_64"):
     name = f"cretspec-{version}-{architecture}-apple-darwin.tar.gz"
     url = f"{base}/{name}"

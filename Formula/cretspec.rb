@@ -1,8 +1,10 @@
 class Cretspec < Formula
   desc "Prepare a complete development project from its specification"
   homepage "https://github.com/yveslaurentcreton/CretSpec"
-  version "0.4.0"
   license "MIT"
+
+  depends_on "git"
+  depends_on :macos
 
   on_macos do
     if Hardware::CPU.arm?
@@ -13,9 +15,6 @@ class Cretspec < Formula
       sha256 "7bc6b85e1654f778581fdb09e58051d4330a26f367745d506c63f1bed694baea"
     end
   end
-
-  depends_on :macos
-  depends_on "git"
 
   def install
     bin.install "cspec"
