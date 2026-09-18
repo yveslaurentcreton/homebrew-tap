@@ -1,0 +1,83 @@
+name: Packages
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '23 7 * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: packages-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Check latest release
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        run: python3 scripts/update.py
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: formula
+          path: Formula/cretspec.rb
+
+  install:
+    needs: prepare
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-14, macos-15-intel]
+    runs-on: ${{ matrix.os }}
+    env:
+      HOMEBREW_NO_AUTO_UPDATE: '1'
+      HOMEBREW_NO_INSTALL_CLEANUP: '1'
+      HOMEBREW_NO_ANALYTICS: '1'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: formula
+          path: Formula
+      - name: Audit, install, test and remove
+        run: |
+          brew tap --custom-remote yveslaurentcreton/tap "$GITHUB_WORKSPACE"
+          brew audit --strict yveslaurentcreton/tap/cretspec
+          brew install yveslaurentcreton/tap/cretspec
+          brew test yveslaurentcreton/tap/cretspec
+          command -v cspec
+          cspec --version
+          git --version
+          brew reinstall yveslaurentcreton/tap/cretspec
+          brew test yveslaurentcreton/tap/cretspec
+          brew uninstall yveslaurentcreton/tap/cretspec
+          if command -v cspec; then exit 1; fi
+
+  publish:
+    needs: [prepare, install]
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: main
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: formula
+          path: Formula
+      - name: Commit verified update
+        run: |
+          if git diff --quiet -- Formula/cretspec.rb; then exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add Formula/cretspec.rb
+          git commit -m 'chore: update CretSpec to the latest verified release'
+          git push origin HEAD:main
