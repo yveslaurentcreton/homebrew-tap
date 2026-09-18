@@ -58,6 +58,9 @@ jobs:
           brew reinstall yveslaurentcreton/tap/cretspec
           brew test yveslaurentcreton/tap/cretspec
           brew uninstall yveslaurentcreton/tap/cretspec
+          test ! -e "$(brew --prefix)/bin/cspec"
+          test ! -L "$(brew --prefix)/bin/cspec"
+          hash -r
           if command -v cspec; then exit 1; fi
 
   publish:
