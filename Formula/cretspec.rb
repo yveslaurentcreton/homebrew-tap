@@ -8,11 +8,11 @@ class Cretspec < Formula
 
   on_macos do
     if Hardware::CPU.arm?
-      url "https://github.com/yveslaurentcreton/CretSpec/releases/download/v0.5.0/cretspec-0.5.0-aarch64-apple-darwin.tar.gz"
-      sha256 "c7a9d435acabdfbdf5a2d4a399cae28c74ca543bcd5191f34b57314e36080b2c"
+      url "https://github.com/yveslaurentcreton/CretSpec/releases/download/v0.7.0/cretspec-0.7.0-aarch64-apple-darwin.tar.gz"
+      sha256 "2f154e8e2667237b9ad092a41a447d6bae67b52a0d06f8a3919606ef54289a77"
     else
-      url "https://github.com/yveslaurentcreton/CretSpec/releases/download/v0.5.0/cretspec-0.5.0-x86_64-apple-darwin.tar.gz"
-      sha256 "9085d58a1cd7334d02a7b2572dc87da6eefe2343e9c65d82f91140cf55766fe5"
+      url "https://github.com/yveslaurentcreton/CretSpec/releases/download/v0.7.0/cretspec-0.7.0-x86_64-apple-darwin.tar.gz"
+      sha256 "a05dc5d27e809d6ae18ccb26b49b5e076859ea477e2615cbd168a3e7db29339a"
     end
   end
 
