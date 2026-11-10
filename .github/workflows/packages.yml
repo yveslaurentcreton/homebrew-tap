@@ -45,12 +45,14 @@ jobs:
         with:
           name: formula
           path: Formula
-      - name: Audit, install, test and remove
+      - name: Install, audit, test and remove
         run: |
           brew tap --custom-remote yveslaurentcreton/tap "$GITHUB_WORKSPACE"
           cp Formula/cretspec.rb "$(brew --repository yveslaurentcreton/tap)/Formula/cretspec.rb"
-          brew audit --strict yveslaurentcreton/tap/cretspec
+          # Install first, as a user does: Homebrew trusts a formula installed by
+          # its full name, and refuses to audit one from an untrusted tap.
           brew install yveslaurentcreton/tap/cretspec
+          brew audit --strict yveslaurentcreton/tap/cretspec
           brew test yveslaurentcreton/tap/cretspec
           command -v cspec
           cspec --version
